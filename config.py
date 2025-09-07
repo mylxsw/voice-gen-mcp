@@ -38,11 +38,6 @@ def load_config(require_s3: bool = True) -> Dict[str, Any]:
             'S3_SECRET_ACCESS_KEY'
         ])
     
-    # Check if authentication is enabled (default: true)
-    auth_enabled = os.getenv('MCP_AUTH_ENABLED', 'true').lower() == 'true'
-    if auth_enabled:
-        required_vars.append('MCP_API_KEY')
-    
     missing_vars = []
     for var in required_vars:
         if not os.getenv(var):
@@ -76,12 +71,6 @@ def load_config(require_s3: bool = True) -> Dict[str, Any]:
             'prefix': os.getenv('S3_PREFIX', 'voice-gen/'),
             'public_url_base': os.getenv('S3_PUBLIC_URL_BASE', '')
         },
-        'auth': {
-            'enabled': auth_enabled,
-            'api_key': os.getenv('MCP_API_KEY') if auth_enabled else None,
-            'header_name': os.getenv('MCP_AUTH_HEADER', 'Authorization'),
-            'require_auth_for_tools': os.getenv('MCP_REQUIRE_AUTH_FOR_TOOLS', 'true').lower() == 'true'
-        }
     }
     
     return config

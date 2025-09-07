@@ -6,19 +6,11 @@ Provides tools to generate speech from text and upload to S3.
 
 import os
 import sys
-import binascii
-import json
 import logging
 import uuid
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
-from pathlib import Path
-
-# Add parent directory to path to import voice generation modules
-parent_dir = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(parent_dir))
-
 from fastmcp import FastMCP, Context
+from fastmcp.server.auth.providers.jwt import StaticTokenVerifier
 from dotenv import load_dotenv
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
@@ -26,7 +18,6 @@ from botocore.exceptions import ClientError, NoCredentialsError
 # Import voice generation components
 from config import load_config
 from voice_generator import VoiceGenerator, VoiceGeneratorError
-from auth import create_auth_middleware, auth_required, AuthenticationError
 
 # Configure logging to stderr (required for MCP servers)
 logging.basicConfig(
@@ -36,19 +27,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize FastMCP server
-mcp = FastMCP("voice-gen")
+# Load environment variables
+load_dotenv()
 
-# Global instances
-voice_generator: Optional[VoiceGenerator] = None
-s3_client: Optional[boto3.client] = None
-config: Optional[Dict[str, Any]] = None
-auth_middleware = None
-
+voice_generator = None
+s3_client = None
+config = None
 
 def initialize_services():
-    """Initialize the voice generator, S3 client, and authentication middleware with configuration."""
-    global voice_generator, s3_client, config, auth_middleware
+    """Initialize the voice generator and S3 client with configuration."""
+    global voice_generator, s3_client, config
     try:
         config = load_config()
         voice_generator = VoiceGenerator(config)
@@ -63,18 +51,13 @@ def initialize_services():
             endpoint_url=s3_config.get('endpoint_url', 'https://s3.amazonaws.com')
         )
 
-        # Initialize authentication middleware
-        auth_middleware = create_auth_middleware(config)
-        if auth_middleware:
-            logger.info("Authentication middleware initialized successfully")
-        else:
-            logger.info("Authentication is disabled")
-
         logger.info("Voice generator and S3 client initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize services: {e}")
         raise
 
+# Initialize FastMCP server
+mcp = FastMCP("voice-gen")
 
 def upload_to_s3(audio_data: bytes, filename: str) -> str:
     """Upload audio data to S3 and return the public URL."""
@@ -127,7 +110,6 @@ def upload_to_s3(audio_data: bytes, filename: str) -> str:
         raise Exception(error_msg)
 
 
-@auth_required(auth_middleware)
 @mcp.tool
 async def generate_voice(
     text: str,
@@ -149,9 +131,6 @@ async def generate_voice(
     try:
         if ctx:
             await ctx.info(f"Starting voice generation for text: {text[:50]}...")
-
-        if not voice_generator or not s3_client:
-            initialize_services()
 
         if not text.strip():
             error_msg = "Error: Text cannot be empty"
@@ -185,10 +164,6 @@ async def generate_voice(
 
         return f"Successfully generated voice audio and uploaded to S3.\nURL: {public_url}\nSize: {file_size} bytes"
 
-    except AuthenticationError as e:
-        error_msg = f"Authentication error: {e}"
-        logger.error(error_msg)
-        return error_msg
     except VoiceGeneratorError as e:
         error_msg = f"Voice generation error: {e}"
         logger.error(error_msg)
@@ -199,17 +174,6 @@ async def generate_voice(
         return error_msg
 
 if __name__ == "__main__":
-    # Load environment variables
-    load_dotenv()
-
-    # Initialize services
-    try:
-        initialize_services()
-        logger.info("MCP Voice Generation Server starting...")
-    except Exception as e:
-        logger.error(f"Failed to start server: {e}")
-        sys.exit(1)
-
     # Get server configuration
     transport_type = os.getenv('MCP_TRANSPORT', 'stdio')
     server_host = os.getenv('MCP_SERVER_HOST', '0.0.0.0')

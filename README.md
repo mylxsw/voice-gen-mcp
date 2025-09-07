@@ -46,11 +46,6 @@ A Model Context Protocol (MCP) server that provides voice generation capabilitie
    # Edit .env with your actual configuration values
    ```
 
-5. **Generate a secure API key**
-   ```bash
-   python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-   ```
-
 ### Docker Installation
 
 1. **Build the Docker image**
@@ -75,9 +70,6 @@ Create a `.env` file based on `env.example` with the following required variable
 ```bash
 VOICE_GEN_API_GROUP_ID=your_minimax_group_id
 VOICE_GEN_API_KEY=your_minimax_api_key
-VOICE_GEN_API_BASE_URL=https://api.minimax.chat/v1/t2a_v2
-VOICE_GEN_DEFAULT_MODEL=speech-2.5-hd-preview
-VOICE_GEN_DEFAULT_VOICE_ID=mylxsw_voice_1
 ```
 
 #### S3 Configuration (Required)
@@ -88,28 +80,6 @@ S3_ACCESS_KEY_ID=your_s3_access_key_id
 S3_SECRET_ACCESS_KEY=your_s3_secret_access_key
 S3_ENDPOINT=https://s3.amazonaws.com
 S3_PREFIX=voice-gen/
-```
-
-#### Authentication (Required)
-```bash
-MCP_AUTH_ENABLED=true
-MCP_API_KEY=your-secure-mcp-api-key-here
-MCP_AUTH_HEADER=Authorization
-MCP_REQUIRE_AUTH_FOR_TOOLS=true
-```
-
-#### Audio Settings (Optional)
-```bash
-VOICE_GEN_AUDIO_SAMPLE_RATE=32000
-VOICE_GEN_AUDIO_BITRATE=128000
-VOICE_GEN_AUDIO_FORMAT=mp3
-```
-
-#### Server Configuration (Optional)
-```bash
-MCP_TRANSPORT=http
-MCP_SERVER_HOST=0.0.0.0
-MCP_SERVER_PORT=8000
 ```
 
 ## Usage
@@ -135,25 +105,8 @@ docker run -d \
 docker-compose up -d
 ```
 
-### MCP Client Configuration
 
-#### Claude Desktop
-Add the following to your Claude Desktop configuration:
-
-```json
-{
-  "mcpServers": {
-    "voice-gen-http": {
-      "url": "http://localhost:8000/mcp",
-      "headers": {
-        "Authorization": "Bearer your-secure-mcp-api-key-here"
-      }
-    }
-  }
-}
-```
-
-#### Other MCP Clients
+#### MCP Clients
 The server supports multiple transport modes:
 - **HTTP**: `http://localhost:8000/mcp`
 - **SSE**: `http://localhost:8000/sse`
@@ -182,112 +135,6 @@ Converts text to speech and uploads to S3.
 }
 ```
 
-## File Organization
-
-Generated audio files are organized in S3 with the following structure:
-```
-bucket-name/
-└── voice-gen/
-    └── YYYY/
-        └── MM/
-            └── DD_{unique_id}_voice.mp3
-```
-
-Files include metadata:
-- Creation date
-- Expiration date (30 days)
-- Unique identifier
-
-## Security
-
-- **Authentication**: API key authentication is enabled by default
-- **Secure Headers**: Supports standard `Authorization: Bearer` format
-- **Environment Variables**: Sensitive data stored in environment variables
-- **S3 Security**: Files have automatic expiration (30 days)
-
-## Development
-
-### Project Structure
-```
-voice-gen-mcp/
-├── server.py              # Main MCP server
-├── voice_generator.py     # Voice generation logic
-├── config.py             # Configuration management
-├── auth.py               # Authentication middleware
-├── requirements.txt      # Python dependencies
-├── Dockerfile           # Docker configuration
-├── docker-compose.yml   # Docker Compose setup
-├── env.example          # Environment template
-└── README.md           # This file
-```
-
-### Running Tests
-```bash
-# Add test commands here when tests are implemented
-```
-
-### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Authentication Errors**
-   - Verify `MCP_API_KEY` is set correctly
-   - Check that the API key matches in both server and client configuration
-
-2. **S3 Upload Failures**
-   - Verify S3 credentials and permissions
-   - Check bucket name and region configuration
-   - Ensure the bucket exists and is accessible
-
-3. **Voice Generation Errors**
-   - Verify Minimax API credentials
-   - Check API quota and limits
-   - Ensure the voice ID exists in your account
-
-4. **Connection Issues**
-   - Check firewall settings for the configured port
-   - Verify the server is running and accessible
-   - Check Docker port mapping if using containers
-
-### Logs
-
-#### Local Development
-Logs are output to stderr and can be redirected:
-```bash
-python3 server.py 2> server.log
-```
-
-#### Docker
-View container logs:
-```bash
-docker logs voice-gen-mcp
-docker-compose logs -f
-```
-
 ## License
 
-[Add your license information here]
-
-## Support
-
-For issues and questions:
-- Create an issue in the repository
-- Check the troubleshooting section
-- Review the configuration examples
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Voice generation with Minimax AI API
-- S3 integration with automatic upload
-- MCP protocol support
-- Docker deployment support
-- Authentication middleware
+[MIT License](LICENSE)
