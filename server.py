@@ -115,6 +115,7 @@ async def generate_voice(
     text: str,
     model: str = "speech-2.5-hd-preview",
     voice_id: str = "mylxsw_voice_1",
+    speed: float = 1.0,
     ctx: Context = None
 ) -> str:
     """Generate speech audio from text using Minimax AI API and upload to S3.
@@ -123,6 +124,7 @@ async def generate_voice(
         text: The text to convert to speech
         model: Model to use for generation (default: speech-2.5-hd-preview)
         voice_id: Voice ID to use (default: mylxsw_voice_1)
+        speed: Speech speed (default: 1.0, typically 0.5-2.0)
         ctx: FastMCP context for logging and other operations
 
     Returns:
@@ -144,7 +146,8 @@ async def generate_voice(
         audio_data = voice_generator.generate_voice(
             text=text,
             model=model,
-            voice_id=voice_id
+            voice_id=voice_id,
+            speed=speed
         )
 
         if ctx:

@@ -31,7 +31,7 @@ class VoiceGenerator:
         self.audio_settings = config['audio_settings']
         self.defaults = config['defaults']
     
-    def generate_voice(self, text: str, model: str = None, voice_id: str = None) -> bytes:
+    def generate_voice(self, text: str, model: str = None, voice_id: str = None, speed: float = None) -> bytes:
         """
         Generate voice audio from text.
         
@@ -39,6 +39,7 @@ class VoiceGenerator:
             text: The text to convert to speech
             model: The model to use (defaults to config value)
             voice_id: The voice ID to use (defaults to config value)
+            speed: The speech speed (defaults to config value, typically 0.5-2.0)
             
         Returns:
             bytes: The audio data in binary format
@@ -52,6 +53,7 @@ class VoiceGenerator:
         # Use defaults if not provided
         model = model or self.defaults['model']
         voice_id = voice_id or self.defaults['voice_id']
+        speed = speed if speed is not None else self.defaults['speed']
         
         # Prepare API request
         url = f"{self.base_url}?GroupId={self.group_id}"
@@ -59,7 +61,7 @@ class VoiceGenerator:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
-        payload = self._create_payload(text, model, voice_id)
+        payload = self._create_payload(text, model, voice_id, speed)
         
         try:
             # Make the API request
@@ -84,7 +86,7 @@ class VoiceGenerator:
         except binascii.Error as e:
             raise VoiceGeneratorError(f"Error decoding audio data: {e}")
     
-    def _create_payload(self, text: str, model: str, voice_id: str) -> Dict[str, Any]:
+    def _create_payload(self, text: str, model: str, voice_id: str, speed: float) -> Dict[str, Any]:
         """
         Create the API request payload.
         
@@ -92,6 +94,7 @@ class VoiceGenerator:
             text: The text to convert to speech
             model: The model to use
             voice_id: The voice ID to use
+            speed: The speech speed
             
         Returns:
             Dict[str, Any]: The request payload
@@ -107,7 +110,7 @@ class VoiceGenerator:
             ],
             "voice_setting": {
                 "voice_id": "",
-                "speed": 1,
+                "speed": speed,
                 "pitch": 0,
                 "vol": 1,
                 "latex_read": False

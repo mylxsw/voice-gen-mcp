@@ -55,7 +55,8 @@ def load_config(require_s3: bool = True) -> Dict[str, Any]:
         },
         'defaults': {
             'model': os.getenv('VOICE_GEN_DEFAULT_MODEL', 'speech-2.5-hd-preview'),
-            'voice_id': os.getenv('VOICE_GEN_DEFAULT_VOICE_ID', 'mylxsw_voice_1')
+            'voice_id': os.getenv('VOICE_GEN_DEFAULT_VOICE_ID', 'mylxsw_voice_1'),
+            'speed': float(os.getenv('VOICE_GEN_DEFAULT_SPEED', '1.0'))
         },
         'audio_settings': {
             'sample_rate': int(os.getenv('VOICE_GEN_AUDIO_SAMPLE_RATE', '32000')),

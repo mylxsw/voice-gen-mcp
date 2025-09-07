@@ -121,6 +121,7 @@ Converts text to speech and uploads to S3.
 - `text` (string, required): The text to convert to speech
 - `model` (string, optional): Model to use (default: "speech-2.5-hd-preview")
 - `voice_id` (string, optional): Voice ID to use (default: "mylxsw_voice_1")
+- `speed` (float, optional): Speech speed (default: 1.0, typically 0.5-2.0)
 
 **Returns:**
 - Success message with S3 URL and file size
@@ -131,9 +132,16 @@ Converts text to speech and uploads to S3.
 {
   "text": "Hello, this is a test of the voice generation system.",
   "model": "speech-2.5-hd-preview",
-  "voice_id": "mylxsw_voice_1"
+  "voice_id": "mylxsw_voice_1",
+  "speed": 1.2
 }
 ```
+
+**Speed Control:**
+- `speed = 0.5`: Half speed (slower speech)
+- `speed = 1.0`: Normal speed (default)
+- `speed = 1.5`: 1.5x speed (faster speech)
+- `speed = 2.0`: Double speed (very fast speech)
 
 ## License
 
