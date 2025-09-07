@@ -174,6 +174,13 @@ async def generate_voice(
         return error_msg
 
 if __name__ == "__main__":
+    # Initialize services before starting the server
+    try:
+        initialize_services()
+    except Exception as e:
+        logger.error(f"Failed to initialize services: {e}")
+        sys.exit(1)
+    
     # Get server configuration
     transport_type = os.getenv('MCP_TRANSPORT', 'stdio')
     server_host = os.getenv('MCP_SERVER_HOST', '0.0.0.0')
