@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  voice-gen-mcp:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # MCP Server Configuration
+      - MCP_AUTH_ENABLED=${MCP_AUTH_ENABLED:-true}
+      - MCP_API_KEY=${MCP_API_KEY}
+      - MCP_AUTH_HEADER=${MCP_AUTH_HEADER:-Authorization}
+      - MCP_REQUIRE_AUTH_FOR_TOOLS=${MCP_REQUIRE_AUTH_FOR_TOOLS:-true}
+      - MCP_TRANSPORT=http
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=8000
+      
+      # Voice Generation API Configuration
+      - VOICE_GEN_API_GROUP_ID=${VOICE_GEN_API_GROUP_ID}
+      - VOICE_GEN_API_KEY=${VOICE_GEN_API_KEY}
+      - VOICE_GEN_API_BASE_URL=${VOICE_GEN_API_BASE_URL:-https://api.minimax.chat/v1/t2a_v2}
+      - VOICE_GEN_DEFAULT_MODEL=${VOICE_GEN_DEFAULT_MODEL:-speech-2.5-hd-preview}
+      - VOICE_GEN_DEFAULT_VOICE_ID=${VOICE_GEN_DEFAULT_VOICE_ID:-mylxsw_voice_1}
+      - VOICE_GEN_AUDIO_SAMPLE_RATE=${VOICE_GEN_AUDIO_SAMPLE_RATE:-32000}
+      - VOICE_GEN_AUDIO_BITRATE=${VOICE_GEN_AUDIO_BITRATE:-128000}
+      - VOICE_GEN_AUDIO_FORMAT=${VOICE_GEN_AUDIO_FORMAT:-mp3}
+      
+      # S3 Configuration
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_ENDPOINT=${S3_ENDPOINT:-https://s3.amazonaws.com}
+      - S3_PREFIX=${S3_PREFIX:-voice-gen/}
+      - S3_PUBLIC_URL_BASE=${S3_PUBLIC_URL_BASE}
+    volumes:
+      # Mount .env file if it exists
+      - ./.env:/app/.env:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/mcp"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
