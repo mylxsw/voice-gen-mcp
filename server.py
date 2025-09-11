@@ -59,6 +59,18 @@ def initialize_services():
 # Initialize FastMCP server
 mcp = FastMCP("voice-gen")
 
+auth_token = os.getenv("VOICE_GEN_MCP_AUTH_TOKEN")
+if auth_token is not None:
+    mcp.auth = StaticTokenVerifier(
+        tokens={
+            auth_token: {
+                "client_id": "default",
+                "scopes": ["read:data", "write:data", "admin:users"]
+            }
+        },
+        required_scopes=["read:data", "write:data"],
+    )
+
 def upload_to_s3(audio_data: bytes, filename: str) -> str:
     """Upload audio data to S3 and return the public URL."""
     try:
